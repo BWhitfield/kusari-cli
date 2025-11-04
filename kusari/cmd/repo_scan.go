@@ -12,9 +12,8 @@ import (
 )
 
 var (
-	platformUrl  string
-	wait         bool
-	outputFormat string
+	platformUrl string
+	wait        bool
 )
 
 func init() {
