@@ -25,21 +25,26 @@ func sbomcompare() *cobra.Command {
 	comparecmd.RunE = func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
 
-		// Validate output format
-		if outputFormat != "markdown" && outputFormat != "sarif" {
-			return fmt.Errorf("invalid output format: %s (must be 'markdown' or 'sarif')", outputFormat)
-		}
+		// First pass we want json. Later we'll want to respond with something better...
+		// if outputFormat != "markdown" && outputFormat != "sarif" {
+		// 	return fmt.Errorf("invalid output format: %s (must be 'markdown' or 'sarif')", outputFormat)
+		// }
 
-		sbomId0, e := convertArgs(args,0)
-		if e != nil {
-			return e
-		}
-		sbomId1, e := convertArgs(args,1)
+		softwareId, e := convertArgs(args, 0)
 		if e != nil {
 			return e
 		}
 
-		return platform.SbomCompare(tenantUrl, outputFormat, sbomId0, sbomId1)
+		sbomIdA, e := convertArgs(args, 1)
+		if e != nil {
+			return e
+		}
+		sbomIdB, e := convertArgs(args, 2)
+		if e != nil {
+			return e
+		}
+
+		return platform.SbomCompare(tenantUrl, outputFormat, softwareId, sbomIdA, sbomIdB)
 	}
 
 	return comparecmd
@@ -49,9 +54,10 @@ var comparecmd = &cobra.Command{
 	Use:   "sbom-compare <sbom_id_0> <sbom_id_1>",
 	Short: "Compares the contents of 2 sboms",
 	Long: `Compares the contents of 2 sboms. This is useful for build system & AI integration + policy enforcement. 
+    <software_id>  software id from the Kusari platform
     <sbom_id_0>  sbom id from the Kusari platform
     <sbom_id_1>  sbom id from the Kusari platform`,
-	Args: cobra.ExactArgs(2),
+	Args: cobra.ExactArgs(3),
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		// Update from viper (this gets env vars + config + flags)
 		tenantUrl = viper.GetString("tenant-url")
