@@ -48,8 +48,26 @@ func SbomCompare(tenantUrl string, outputFormat string, softwareId int, sbomidA 
 		return e
 	}
 
-	fmt.Printf("Package List A: %+v\n", packageListA)
-	fmt.Printf("Package List B: %+v\n", packageListB)
+	// fmt.Printf("Package List A: %+v\n", packageListA)
+	// fmt.Printf("Package List B: %+v\n", packageListB)
+
+	diff := ComparePackages(packageListA, packageListB)
+
+	fmt.Printf("--- Comparison Results ---\n")
+	fmt.Printf("Added (%d):\n", len(diff.Added))
+	for _, p := range diff.Added {
+		fmt.Printf("  + %s\n", p.Key())
+	}
+
+	fmt.Printf("\nRemoved (%d):\n", len(diff.Removed))
+	for _, p := range diff.Removed {
+		fmt.Printf("  - %s\n", p.Key())
+	}
+
+	fmt.Printf("\nSame (%d):\n", len(diff.Same))
+	for _, p := range diff.Same {
+		fmt.Printf("  = %s\n", p.Key())
+	}
 
 	return nil
 }
