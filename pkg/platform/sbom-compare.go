@@ -1,6 +1,7 @@
 package platform
 
 import (
+	"encoding/json"
 	"fmt"
 	"strconv"
 
@@ -21,9 +22,6 @@ func SbomCompare(tenantUrl string, outputFormat string, softwareId int, sbomidA 
 	if e != nil {
 		return e
 	}
-
-	fmt.Printf("urlA: %s\n", *u0)
-	fmt.Printf("urlB: %s\n", *u1)
 
 	token, err := auth.LoadToken("kusari")
 	if err != nil {
@@ -48,11 +46,14 @@ func SbomCompare(tenantUrl string, outputFormat string, softwareId int, sbomidA 
 		return e
 	}
 
-	// fmt.Printf("Package List A: %+v\n", packageListA)
-	// fmt.Printf("Package List B: %+v\n", packageListB)
-
 	diff := ComparePackages(packageListA, packageListB)
 
+	outputJson(diff)
+
+	return nil
+}
+
+func outputDiff(diff ComparisonResult) {
 	fmt.Printf("--- Comparison Results ---\n")
 	fmt.Printf("Added (%d):\n", len(diff.Added))
 	for _, p := range diff.Added {
@@ -68,6 +69,14 @@ func SbomCompare(tenantUrl string, outputFormat string, softwareId int, sbomidA 
 	for _, p := range diff.Same {
 		fmt.Printf("  = %s\n", p.Key())
 	}
+}
 
-	return nil
+func outputJson(diff ComparisonResult) {
+	jsonData, err := json.Marshal(diff)
+	if err != nil {
+		fmt.Print("failed to marshall")
+		return
+	}
+	jsonString := string(jsonData)
+	fmt.Println(jsonString)
 }
